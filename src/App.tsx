@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { handleFileUpload } from "./handlers/fileUploadHandler";
 import { handleSendMessage } from "./handlers/sendMessageToAi";
 
@@ -7,6 +7,8 @@ import process from "process";
 window.process = process;
 
 function App() {
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     // Fetch the list of available models
     fetchAvailableModels().then((models) => {
@@ -59,9 +61,9 @@ function App() {
 
           <div className="add-image-container">
             <input type="checkbox" name="add-image" id="add-image" />
-            <label htmlFor="add-image">Add Image </label>
+            <label htmlFor="add-image">Add Image</label>
             <div className="model-selection">
-              <label htmlFor="model-select">Select Model:</label>
+              <label htmlFor="model-select"></label>
               <select id="model-select" name="model-select"></select>
             </div>
           </div>
@@ -76,7 +78,9 @@ function App() {
             <button
               id="btn-message-send"
               type="submit"
+              disabled={loading}
               onClick={() => {
+                setLoading(true);
                 const inputElement = document.getElementById(
                   "input-message"
                 ) as HTMLInputElement;
@@ -92,11 +96,13 @@ function App() {
                     inputElement.value,
                     addImageCheckbox.checked,
                     selectedModel
-                  );
+                  ).finally(() => {
+                    setLoading(false);
+                  });
                 }
               }}
             >
-              Send
+              {loading ? "..." : "Send"}
             </button>
           </div>
         </div>
@@ -109,7 +115,7 @@ function App() {
 async function fetchAvailableModels() {
   // Replace this with your actual API call or data source
   const models = [
-    { id: "gpt-4o-mini", name: "gpt-4o-mini" },
+    { id: "gpt-4o", name: "gpt-4o" },
     { id: "claude-3-5-sonnet-20240620", name: "claude-3-5-sonnet-20240620" },
   ];
   return models;

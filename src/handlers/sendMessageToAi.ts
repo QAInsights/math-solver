@@ -1,68 +1,46 @@
-import { BufferMemory } from "langchain/memory";
-import { UpstashRedisChatMessageHistory } from "@langchain/community/stores/message/upstash_redis";
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatAnthropic, AnthropicInput } from "@langchain/anthropic";
-import { ConversationChain } from "langchain/chains";
-import { Redis } from "@upstash/redis";
-import { HumanMessage } from "@langchain/core/messages";
-import Anthropic from "@anthropic-ai/sdk";
-import process from "process";
+import { send } from "process";
 
-interface ExtendedAnthropicInput extends AnthropicInput {
-  dangerouslyAllowBrowser?: boolean;
-}
-// Initialize Redis client
-const client = new Redis({
-  url: import.meta.env.VITE_UPSTASH_URL,
-  token: import.meta.env.VITE_UPSTASH_TOKEN,
-});
-
-// Create a unique session ID for the conversation
-const sessionId = new Date().toISOString();
-
-// Initialize memory
-const memory = new BufferMemory({
-  chatHistory: new UpstashRedisChatMessageHistory({
-    sessionId: sessionId,
-    sessionTTL: 3600, // 1 hour
-    client,
-  }),
-});
-
-// Initialize the model and chain
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-const openaiModels = ["gpt-4o-mini"];
+const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
-// Function to check the model type
-function isModelType(modelName: string): unknown {
-  if (openaiModels.includes(modelName)) {
-    const model = new ChatOpenAI({
-      model: "gpt-4o",
-      temperature: 0,
-      apiKey: OPENAI_API_KEY,
-    });
-    return model;
-  } else if (claudeModels.includes(modelName)) {
-    const model = new ChatAnthropic({
-      model: "claude-3-5-sonnet-20240620",
-      temperature: 0,
-      anthropicApiKey: ANTHROPIC_API_KEY,
-      dangerouslyAllowBrowser: true,
-    } as ExtendedAnthropicInput);
-    return model;
-  } else {
-    return "Unknown Model";
-  }
-}
+// Set up CORS configuration
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
+// Function to handle CORS preflight requests
+export const handleCors = (request: Request) => {
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders,
+    });
+  }
+};
+
+let conversation = [
+  // {
+  //   role: "system",
+  //   content:
+  //     "You will follow the conversation and respond to the queries asked by the 'user''s content. You will act as the assistant",
+  // },
+];
+
+let anthropicConversation = [];
 export const handleSendMessage = async (
   message: string,
   imageCheck: boolean,
   selectedModel: string
 ) => {
+  // Add this loading indicator to the send button
+  const sendButton = document.getElementById("btn-message-send");
+
+  // Function to extract the image from the uploaded image
+  const { imageType, base64Image } = extractBase64Image();
+
+  console.log(imageType);
+  console.log(base64Image);
   if (
     !openaiModels.includes(selectedModel) &&
     !claudeModels.includes(selectedModel)
@@ -71,11 +49,9 @@ export const handleSendMessage = async (
     return;
   }
 
-  const model = isModelType(selectedModel);
-
   console.log("Image Check:", imageCheck);
-  // Clear the input field after sending the message
 
+  // Clear the input field after sending the message
   const userInput = document.getElementById("input-message");
   if (userInput) {
     (userInput as HTMLInputElement).value = "";
@@ -83,9 +59,7 @@ export const handleSendMessage = async (
 
   // Add the user message to the chat history
   const conversationElement = document.getElementById("conversation");
-
   if (conversationElement) {
-    // Create a new div element for the user message
     const userMessageDiv = document.createElement("div");
     userMessageDiv.className = "user-message";
     userMessageDiv.textContent = message;
@@ -98,71 +72,136 @@ export const handleSendMessage = async (
   }
 
   try {
-    const messageContent: any[] = [
-      {
-        type: "text",
-        text: message,
-      },
-    ];
-
+    let baseURL = "";
     const uploadedImageUrl = localStorage.getItem("uploadedImage");
 
-    if (imageCheck) {
-      messageContent.push({
-        type: "image_url",
-        image_url: {
-          url: uploadedImageUrl,
-        },
+    if (selectedModel === "gpt-4o") {
+      baseURL = "http://localhost:3000/api/hello";
+      if (imageCheck) {
+        conversation.push({
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: message,
+            },
+            {
+              type: "image_url",
+              image_url: { url: uploadedImageUrl },
+            },
+          ],
+        });
+      } else {
+        conversation.push({
+          role: "user",
+          content: message,
+        });
+      }
+    }
+    if (selectedModel === "claude-3-5-sonnet-20240620") {
+      baseURL = "http://localhost:3000/api/anthropic";
+      if (imageCheck) {
+        anthropicConversation.push({
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: message,
+            },
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: imageType,
+                data: base64Image,
+              },
+            },
+          ],
+        });
+      } else {
+        anthropicConversation.push({
+          role: "user",
+          content: message,
+        });
+      }
+    }
+
+    const finalConversation =
+      selectedModel === "claude-3-5-sonnet-20240620"
+        ? anthropicConversation
+        : conversation;
+
+    console.log(finalConversation);
+
+    console.log(
+      JSON.stringify({
+        input: finalConversation,
+        selectedModel: selectedModel,
+      })
+    );
+
+    const response = await fetch(baseURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: finalConversation,
+        selectedModel: selectedModel,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    let data = await response.json();
+    console.log(data);
+
+    if (selectedModel === "claude-3-5-sonnet-20240620") {
+      data = data.message[0].text;
+      anthropicConversation.push({
+        role: "assistant",
+        content: data,
+      });
+    } else if (selectedModel === "gpt-4o") {
+      data = data.message;
+      conversation.push({
+        role: "assistant",
+        content: data,
       });
     }
 
-    const humanMessage = new HumanMessage({
-      content: messageContent,
-    });
+    // Display the AI response
     const aiMessageDiv = document.createElement("div");
-
-    if (!imageCheck) {
-      console.log("Not image");
-      const chain = new ConversationChain({ llm: model, memory });
-      const response = await chain.predict({ input: message });
-      // const response = await chain.invoke({ input: message });
-      console.log("Response chat:", response);
-      aiMessageDiv.textContent = response;
-    } else {
-      console.log("Image");
-
-      const response = await model.invoke([humanMessage]);
-      console.log("Response chat:", response);
-      // render the output as markdown
-      let contentString: string;
-      if (Array.isArray(response.content)) {
-        contentString = response.content
-          .map((item) => JSON.stringify(item))
-          .join("\n");
-      } else {
-        contentString = response.content.toString();
-      }
-      aiMessageDiv.innerText = contentString;
-      // aiMessageDiv.textContent = JSON.stringify(response.content);
-    }
+    aiMessageDiv.className = "ai-message";
+    aiMessageDiv.textContent = data;
+    aiMessageDiv.style.background = "lightgreen";
+    aiMessageDiv.style.padding = "10px";
+    aiMessageDiv.style.borderRadius = "5px";
+    aiMessageDiv.style.margin = "0.25rem";
+    aiMessageDiv.style.alignSelf = "flex-start";
 
     if (conversationElement) {
-      // Create a new div element for the AI message
-
-      aiMessageDiv.className = "ai-message";
-
-      aiMessageDiv.style.background = "lightgreen";
-      aiMessageDiv.style.padding = "10px";
-      aiMessageDiv.style.borderRadius = "5px";
-      aiMessageDiv.style.margin = "0.25rem";
-      aiMessageDiv.style.alignSelf = "flex-start";
       conversationElement.appendChild(aiMessageDiv);
+    }
+
+    // Scroll to the bottom of the conversation
+    if (conversationElement) {
+      conversationElement.scrollTop = conversationElement.scrollHeight;
     }
   } catch (error) {
     console.error("Error in conversation:", error);
     // Handle error (e.g., display error message to user)
   }
-
-  // Wait for the response to be returned
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
 };
+function extractBase64Image() {
+  const uploadedImage = localStorage.getItem("uploadedImage");
+  if (uploadedImage) {
+    const base64Image = uploadedImage.replace("data:image/png;base64,", "");
+    const imageType = uploadedImage.split(";")[0].split(":")[1];
+
+    return { imageType, base64Image };
+  }
+  throw new Error("No uploaded image found.");
+}
