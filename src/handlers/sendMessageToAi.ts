@@ -75,6 +75,8 @@ export const handleSendMessage = async (
 
      if (selectedModel === "gpt-4o") {
       baseURL = import.meta.env.VITE_AI_ENDPOINT + "/api/hello";
+      console.log("Base url", baseURL);
+
       if (imageCheck) {
         conversation.push({
           role: "user",
@@ -98,6 +100,8 @@ export const handleSendMessage = async (
     }
     if (selectedModel === "claude-3-5-sonnet-20240620") {
       baseURL = baseURL + "/api/anthropic";
+      console.log("Base url", baseURL);
+      
       if (imageCheck) {
         anthropicConversation.push({
           role: "user",
