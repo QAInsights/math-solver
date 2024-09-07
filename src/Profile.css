@@ -1,0 +1,19 @@
+.profile-picture {
+    height: 50px;
+    width: 50px;
+}
+
+.profile-container {
+    display: flex;
+    align-items: right;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-direction: row-reverse;
+    margin-right: 1rem;
+
+}
+
+p {
+    margin: 0;
+    font-size: small;
+}

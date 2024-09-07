@@ -5,6 +5,11 @@
   justify-content: center;
 }
 
+.nav-header h1 {
+  flex-grow: 1;
+  text-align: center;
+}
+
 .workarea {
   display: flex;
 }
@@ -131,4 +136,23 @@
   /* Added to make it take full height of parent */
   overflow-y: auto;
   /* Added to enable scrolling if needed */
+}
+
+.login-container {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.login-container button {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.warning {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  text-align: center;
 }

@@ -6,7 +6,7 @@ export const handleFileUpload = (
   const file = event.target.files?.[0];
   if (file) {
     console.log("File uploaded:", file.name);
-    const imageElement = document.getElementById("uploadedImage");
+    const imageElement = document.getElementById("uploadedImage") as HTMLImageElement;
     if (imageElement) {
       imageElement.src = URL.createObjectURL(file);
 

@@ -1,5 +1,3 @@
-import { send } from "process";
-
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
@@ -34,7 +32,6 @@ export const handleSendMessage = async (
   selectedModel: string
 ) => {
   // Add this loading indicator to the send button
-  const sendButton = document.getElementById("btn-message-send");
 
   // Function to extract the image from the uploaded image
   const { imageType, base64Image } = extractBase64Image();
@@ -72,11 +69,14 @@ export const handleSendMessage = async (
   }
 
   try {
-    let baseURL = "";
+    let baseURL = import.meta.env.VITE_AI_ENDPOINT;
+    console.log(baseURL);
     const uploadedImageUrl = localStorage.getItem("uploadedImage");
 
-    if (selectedModel === "gpt-4o") {
-      baseURL = "http://localhost:3000/api/hello";
+     if (selectedModel === "gpt-4o") {
+      baseURL = import.meta.env.VITE_AI_ENDPOINT + "/api/hello";
+      console.log("Base url", baseURL);
+
       if (imageCheck) {
         conversation.push({
           role: "user",
@@ -99,7 +99,9 @@ export const handleSendMessage = async (
       }
     }
     if (selectedModel === "claude-3-5-sonnet-20240620") {
-      baseURL = "http://localhost:3000/api/anthropic";
+      baseURL = baseURL + "/api/anthropic";
+      console.log("Base url", baseURL);
+      
       if (imageCheck) {
         anthropicConversation.push({
           role: "user",
