@@ -1,4 +1,3 @@
-
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
@@ -35,13 +34,6 @@ export const handleSendMessage = async (
   console.log("Selected Model:", selectedModel);
   console.log("Image Check:", imageCheck);
   console.log("Message:", message);
-
-  if (imageCheck) {
-    // Function to extract the image from the uploaded image
-    const { imageType, base64Image } = extractBase64Image();
-    console.log(imageType);
-    console.log(base64Image);
-  }
 
   if (
     !openaiModels.includes(selectedModel) &&
@@ -108,6 +100,7 @@ export const handleSendMessage = async (
       console.log("Base url", baseURL);
 
       if (imageCheck) {
+        const { imageType, base64Image } = extractBase64Image();
         anthropicConversation.push({
           role: "user",
           content: [
