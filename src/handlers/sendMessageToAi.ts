@@ -1,5 +1,3 @@
-import { send } from "process";
-
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
@@ -34,7 +32,6 @@ export const handleSendMessage = async (
   selectedModel: string
 ) => {
   // Add this loading indicator to the send button
-  const sendButton = document.getElementById("btn-message-send");
 
   // Function to extract the image from the uploaded image
   const { imageType, base64Image } = extractBase64Image();
