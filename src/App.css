@@ -142,6 +142,7 @@
   display: flex;
   gap: 10px;
   margin-left: auto;
+  align-items: center;
 }
 
 .login-container button {

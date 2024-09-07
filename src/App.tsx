@@ -1,18 +1,36 @@
 import "./App.css";
 import { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+import { Button, Form } from 'react-bootstrap';
 import { handleFileUpload } from "./handlers/fileUploadHandler";
 import { handleSendMessage } from "./handlers/sendMessageToAi";
 import Login from "./Login";
 import Logout from "./Logout";
 import process from "process";
 import Profile from "./Profile";
+import Alert from "./Alert";
+import placeholder from "./assets/placeholder.jpeg"
 import { useAuth0 } from "@auth0/auth0-react";
 
 window.process = process;
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const getUploadedImage = localStorage.getItem("uploadedImage");
+   
   const { isAuthenticated } = useAuth0();
+
+  useEffect(() => {
+    setIsButtonDisabled(inputValue.trim().length === 0);
+  }, [inputValue]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
 
   useEffect(() => {
     // Fetch the list of available models
@@ -38,7 +56,7 @@ function App() {
   return (
     <>
       <div className="nav-header">
-        <h1>🟰 Math Chat ➕</h1>
+        <h1>🟰 Math Solver ➕</h1>
         <div className="login-container">
           <Login />
           <Logout />
@@ -51,20 +69,20 @@ function App() {
           <div className="upload">
             <p></p>
             <div>
-              <input
-                type="file"
-                name="file"
-                id="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-              />
-              <label htmlFor="file">Upload</label>
-            </div>
-          </div>
-
+              <Form.Group  className="mb-3">
+                  <Form.Control
+                    type="file"
+                    name="file"
+                    id="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                  />
+              </Form.Group>
+             </div>
+          </div> 
           <div className="canvas">
             <img
-              src="https://via.placeholder.com/300"
+              src={placeholder}
               alt="placeholder"
               id="uploadedImage"
             />
@@ -85,15 +103,16 @@ function App() {
             <div className="message-box">
               <input
                 type="text"
+                value={inputValue}
+                onChange={handleInputChange}
                 className="input-message"
                 placeholder="Type your message"
                 id="input-message"
-              />
-
-              <button
+              /> 
+              <Button
                 id="btn-message-send"
                 type="submit"
-                disabled={loading}
+                disabled={loading || isButtonDisabled}
                 onClick={() => {
                   setLoading(true);
                   const inputElement = document.getElementById(
@@ -106,6 +125,15 @@ function App() {
                     "model-select"
                   ) as HTMLSelectElement;
                   const selectedModel = modelSelect.value;
+                  // Check if the image checkbox is checked and an image is uploaded
+                  if (
+                    addImageCheckbox.checked &&
+                    !getUploadedImage
+                  ) {
+                    // Show an alert or error message
+                    setAlertVisible(true);
+                    return;
+                  }
                   if (inputElement) {
                     handleSendMessage(
                       inputElement.value,
@@ -113,12 +141,15 @@ function App() {
                       selectedModel
                     ).finally(() => {
                       setLoading(false);
+                      setInputValue(""); // Clear the input field
                     });
                   }
                 }}
               >
                 {loading ? "..." : "Send"}
-              </button>
+              </Button>
+              { alertVisible && <Alert message={"Test"} type={"error"}></Alert>}
+
             </div>
           </div>
         </div>
