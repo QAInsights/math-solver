@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.54",
     "@anthropic-ai/sdk": "^0.27.1",
+    "@auth0/auth0-react": "^2.2.4",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
