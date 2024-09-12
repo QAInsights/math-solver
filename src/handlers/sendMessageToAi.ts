@@ -1,10 +1,8 @@
 // import axios from "axios";
-import { useAuth0Backend } from '../hooks/useAuthBackend';
- 
+  
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
-const { getBackendToken } = useAuth0Backend();
-
+ 
 // Set up CORS configuration
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,7 +34,7 @@ export const handleSendMessage = async (
   console.log("Message:", message);
 
   
-  console.log("Token:", getBackendToken);
+  console.log("Token:", token);
 
   if (
     !openaiModels.includes(selectedModel) &&
