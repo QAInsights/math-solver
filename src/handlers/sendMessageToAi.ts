@@ -1,4 +1,4 @@
-// import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
   
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
@@ -34,7 +34,8 @@ export const handleSendMessage = async (
   console.log("Message:", message);
 
   
-  console.log("Token:", token);
+  console.log("Token:", await getToken());
+  const backendToken = await getToken();
 
   if (
     !openaiModels.includes(selectedModel) &&
@@ -148,7 +149,7 @@ export const handleSendMessage = async (
       headers: {
         "Content-Type": "application/json",
         // Add the Authorization header with the token
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${backendToken}`,
       },
 
       body: JSON.stringify({
@@ -212,20 +213,21 @@ function extractBase64Image() {
   throw new Error("No uploaded image found.");
 }
 
-// async function getToken() {
+async function getToken() {
 
-//   var options = {
-//     method: 'POST',
-//     url: 'https://dev-24.us.auth0.com/oauth/token',
-//     headers: {'content-type': 'application/x-www-form-urlencoded' },
-//     data: new URLSearchParams({
-//       grant_type: 'client_credentials',
-//       client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
-//       client_secret: import.meta.env.VITE_OAUTH_API_CLIENT_SECRET,
-//       audience: import.meta.env.VITE_OAUTH_API_AUDIENCE
-//     })
-//   };
+  const options: AxiosRequestConfig = {
+    method: 'POST',
+    url: 'https://dev-24.us.auth0.com/oauth/token',
+    headers: {'content-type': 'application/x-www-form-urlencoded' },
+    data: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
+      client_secret: import.meta.env.VITE_OAUTH_API_CLIENT_SECRET,
+      audience: import.meta.env.VITE_OAUTH_API_AUDIENCE
+    })
+  };
 
-//   const response = await axios.request(options);
-//   console.log(response.data);
-// }
+  const response = await axios.request(options);
+  console.log(response.data);
+  return response.data.access_token;
+}
