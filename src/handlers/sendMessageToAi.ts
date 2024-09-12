@@ -149,7 +149,7 @@ export const handleSendMessage = async (
       headers: {
         "Content-Type": "application/json",
         // Add the Authorization header with the token
-        // Authorization: `Bearer `,
+        Authorization: `Bearer ${token}`,
       },
 
       body: JSON.stringify({
