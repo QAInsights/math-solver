@@ -23,6 +23,8 @@ function App() {
   const getUploadedImage = localStorage.getItem("uploadedImage");
    
   const { isAuthenticated } = useAuth0();
+  const { getAccessTokenSilently } = useAuth0();
+
 
   useEffect(() => {
     setIsButtonDisabled(inputValue.trim().length === 0);
@@ -115,6 +117,7 @@ function App() {
                 disabled={loading || isButtonDisabled}
                 onClick={() => {
                   setLoading(true);
+                  const token = getAccessTokenSilently();
                   const inputElement = document.getElementById(
                     "input-message"
                   ) as HTMLInputElement;
@@ -138,7 +141,8 @@ function App() {
                     handleSendMessage(
                       inputElement.value,
                       addImageCheckbox.checked,
-                      selectedModel
+                      selectedModel,
+                      token
                     ).finally(() => {
                       setLoading(false);
                       setInputValue(""); // Clear the input field
