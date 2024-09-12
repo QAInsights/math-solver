@@ -25,7 +25,7 @@ function App() {
   const [selectedModel, setSelectedModel] = useState<string>("");
    
   const { isAuthenticated } = useAuth0();
-  const { getAccessTokenSilently } = useAuth0();
+  // const { getAccessTokenSilently } = useAuth0();
 
 
   useEffect(() => {
