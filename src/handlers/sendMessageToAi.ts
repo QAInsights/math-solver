@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
@@ -17,15 +19,9 @@ export const handleCors = (request: Request) => {
   }
 };
 
-let conversation = [
-  // {
-  //   role: "system",
-  //   content:
-  //     "You will follow the conversation and respond to the queries asked by the 'user''s content. You will act as the assistant",
-  // },
-];
-
+let conversation = [];
 let anthropicConversation = [];
+
 export const handleSendMessage = async (
   message: string,
   imageCheck: boolean,
@@ -34,6 +30,9 @@ export const handleSendMessage = async (
   console.log("Selected Model:", selectedModel);
   console.log("Image Check:", imageCheck);
   console.log("Message:", message);
+
+  const g = getToken();
+  console.log("Token:", g);
 
   if (
     !openaiModels.includes(selectedModel) &&
@@ -44,6 +43,8 @@ export const handleSendMessage = async (
   }
 
   console.log("Image Check:", imageCheck);
+
+  // Get a token from auth0 to authorize the request
 
   // Clear the input field after sending the message
   const userInput = document.getElementById("input-message");
@@ -144,7 +145,10 @@ export const handleSendMessage = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        // Add the Authorization header with the token
+        // Authorization: `Bearer `,
       },
+
       body: JSON.stringify({
         input: finalConversation,
         selectedModel: selectedModel,
@@ -204,4 +208,22 @@ function extractBase64Image() {
     return { imageType, base64Image };
   }
   throw new Error("No uploaded image found.");
+}
+
+async function getToken() {
+
+  var options = {
+    method: 'POST',
+    url: 'https://dev-24.us.auth0.com/oauth/token',
+    headers: {'content-type': 'application/x-www-form-urlencoded' },
+    data: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
+      client_secret: import.meta.env.VITE_OAUTH_API_CLIENT_SECRET,
+      audience: import.meta.env.VITE_OAUTH_API_AUDIENCE
+    })
+  };
+
+  const response = await axios.request(options);
+  console.log(response.data);
 }
