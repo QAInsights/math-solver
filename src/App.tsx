@@ -20,7 +20,9 @@ function App() {
   const [inputValue, setInputValue] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const getUploadedImage = localStorage.getItem("uploadedImage");
+  const [selectedModel, setSelectedModel] = useState<string>("");
    
   const { isAuthenticated } = useAuth0();
   const { getAccessTokenSilently } = useAuth0();
@@ -32,14 +34,15 @@ function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+    setIsTyping(true);
   };
 
+ 
+
   useEffect(() => {
-    // Fetch the list of available models
-    // if isAuthenicated then fetch available models
-    if (isAuthenticated) {
+    if (isAuthenticated && !isTyping) {
       fetchAvailableModels().then((models) => {
-        const modelSelect = document.getElementById("model-select");
+        const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
         if (modelSelect) {
           // Clear existing options
           modelSelect.innerHTML = "";
@@ -52,9 +55,36 @@ function App() {
             (modelSelect as HTMLSelectElement).add(option);
           });
         }
+        // Restore the selected value
+        modelSelect.value = selectedModel;
       });
     }
-  });
+  }, [isAuthenticated, isTyping, selectedModel]);
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModel(e.target.value);
+  };
+
+  const handleSendMessageClick = async () => {
+    setLoading(true);
+    const token = await getAccessTokenSilently();
+    const inputElement = document.getElementById("input-message") as HTMLInputElement;
+    const addImageCheckbox = document.getElementById("add-image") as HTMLInputElement;
+  
+    if (addImageCheckbox.checked && !getUploadedImage) {
+      setAlertVisible(true);
+      return;
+    }
+
+    if (inputElement) {
+      handleSendMessage(inputElement.value, addImageCheckbox.checked, selectedModel, token).finally(() => {
+        setLoading(false);
+        setInputValue(""); // Clear the input field
+        setIsTyping(false); // Reset typing state
+      });
+    }
+  };
+
   return (
     <>
       <div className="nav-header">
@@ -98,7 +128,7 @@ function App() {
               <label htmlFor="add-image">Add Image</label>
               <div className="model-selection">
                 <label htmlFor="model-select"></label>
-                <select id="model-select" name="model-select"></select>
+                <select id="model-select" name="model-select" onChange={handleModelChange}></select>
               </div>
             </div>
 
@@ -115,40 +145,7 @@ function App() {
                 id="btn-message-send"
                 type="submit"
                 disabled={loading || isButtonDisabled}
-                onClick={async () => {
-                  setLoading(true);
-                  const token = await getAccessTokenSilently();
-                  const inputElement = document.getElementById(
-                    "input-message"
-                  ) as HTMLInputElement;
-                  const addImageCheckbox = document.getElementById(
-                    "add-image"
-                  ) as HTMLInputElement;
-                  const modelSelect = document.getElementById(
-                    "model-select"
-                  ) as HTMLSelectElement;
-                  const selectedModel = modelSelect.value;
-                  // Check if the image checkbox is checked and an image is uploaded
-                  if (
-                    addImageCheckbox.checked &&
-                    !getUploadedImage
-                  ) {
-                    // Show an alert or error message
-                    setAlertVisible(true);
-                    return;
-                  }
-                  if (inputElement) {
-                    handleSendMessage(
-                      inputElement.value,
-                      addImageCheckbox.checked,
-                      selectedModel,
-                      token
-                    ).finally(() => {
-                      setLoading(false);
-                      setInputValue(""); // Clear the input field
-                    });
-                  }
-                }}
+                onClick={handleSendMessageClick}
               >
                 {loading ? "..." : "Send"}
               </Button>
