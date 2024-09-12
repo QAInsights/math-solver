@@ -25,9 +25,7 @@ let anthropicConversation = [];
 export const handleSendMessage = async (
   message: string,
   imageCheck: boolean,
-  selectedModel: string,
-  token: string
-) => {
+  selectedModel: string) => {
  
   console.log("Selected Model:", selectedModel);
   console.log("Image Check:", imageCheck);
