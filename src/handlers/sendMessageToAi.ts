@@ -1,5 +1,6 @@
 import axios from "axios";
-
+ 
+ 
 const openaiModels = ["gpt-4o"];
 const claudeModels = ["claude-3-5-sonnet-20240620"];
 
@@ -25,14 +26,16 @@ let anthropicConversation = [];
 export const handleSendMessage = async (
   message: string,
   imageCheck: boolean,
-  selectedModel: string
+  selectedModel: string,
+  token: string
 ) => {
+ 
   console.log("Selected Model:", selectedModel);
   console.log("Image Check:", imageCheck);
   console.log("Message:", message);
 
-  const g = getToken();
-  console.log("Token:", g);
+  
+  console.log("Token:", token);
 
   if (
     !openaiModels.includes(selectedModel) &&
@@ -210,20 +213,20 @@ function extractBase64Image() {
   throw new Error("No uploaded image found.");
 }
 
-async function getToken() {
+// async function getToken() {
 
-  var options = {
-    method: 'POST',
-    url: 'https://dev-24.us.auth0.com/oauth/token',
-    headers: {'content-type': 'application/x-www-form-urlencoded', 'Access-Control-Allow-Origin': '*' },
-    data: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
-      client_secret: import.meta.env.VITE_OAUTH_API_CLIENT_SECRET,
-      audience: import.meta.env.VITE_OAUTH_API_AUDIENCE
-    })
-  };
+//   var options = {
+//     method: 'POST',
+//     url: 'https://dev-24.us.auth0.com/oauth/token',
+//     headers: {'content-type': 'application/x-www-form-urlencoded' },
+//     data: new URLSearchParams({
+//       grant_type: 'client_credentials',
+//       client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
+//       client_secret: import.meta.env.VITE_OAUTH_API_CLIENT_SECRET,
+//       audience: import.meta.env.VITE_OAUTH_API_AUDIENCE
+//     })
+//   };
 
-  const response = await axios.request(options);
-  console.log(response.data);
-}
+//   const response = await axios.request(options);
+//   console.log(response.data);
+// }
