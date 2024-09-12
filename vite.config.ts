@@ -13,8 +13,15 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       port: 3001,
+      proxy: {
+        '/oauth/token': {
+          target: 'https://dev-24.us.auth0.com',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/oauth\/token/, '/oauth/token'),
+        },
+      },
     },
-
     build: {
       outDir: "dist",
     },
