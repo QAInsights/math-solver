@@ -67,7 +67,7 @@ function App() {
 
   const handleSendMessageClick = async () => {
     setLoading(true);
-    const token = await getAccessTokenSilently();
+    // const token = await getAccessTokenSilently();
     const inputElement = document.getElementById("input-message") as HTMLInputElement;
     const addImageCheckbox = document.getElementById("add-image") as HTMLInputElement;
   
@@ -77,7 +77,7 @@ function App() {
     }
 
     if (inputElement) {
-      handleSendMessage(inputElement.value, addImageCheckbox.checked, selectedModel, token).finally(() => {
+      handleSendMessage(inputElement.value, addImageCheckbox.checked, selectedModel).finally(() => {
         setLoading(false);
         setInputValue(""); // Clear the input field
         setIsTyping(false); // Reset typing state
