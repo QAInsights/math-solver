@@ -115,9 +115,9 @@ function App() {
                 id="btn-message-send"
                 type="submit"
                 disabled={loading || isButtonDisabled}
-                onClick={() => {
+                onClick={async () => {
                   setLoading(true);
-                  const token = getAccessTokenSilently();
+                  const token = await getAccessTokenSilently();
                   const inputElement = document.getElementById(
                     "input-message"
                   ) as HTMLInputElement;
