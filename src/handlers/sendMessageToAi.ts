@@ -27,12 +27,6 @@ export const handleSendMessage = async (
   imageCheck: boolean,
   selectedModel: string) => {
  
-  console.log("Selected Model:", selectedModel);
-  console.log("Image Check:", imageCheck);
-  console.log("Message:", message);
-
-  
-  console.log("Token:", await getToken());
   const backendToken = await getToken();
 
   if (
@@ -226,6 +220,5 @@ async function getToken() {
   };
 
   const response = await axios.request(options);
-  console.log(response.data);
   return response.data.access_token;
 }
