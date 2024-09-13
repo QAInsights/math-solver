@@ -216,7 +216,10 @@ async function getToken() {
   const options: AxiosRequestConfig = {
     method: 'POST',
     url: 'https://dev-24.us.auth0.com/oauth/token',
-    headers: {'content-type': 'application/x-www-form-urlencoded' },
+    headers: {'content-type': 'application/x-www-form-urlencoded',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'},
     data: new URLSearchParams({
       grant_type: 'client_credentials',
       client_id: import.meta.env.VITE_OAUTH_API_CLIENT_ID,
